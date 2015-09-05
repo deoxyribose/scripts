@@ -46,26 +46,33 @@ D = cdist(spectrum.T, spectrum.T,'cosine')
 #clf()
 #show(matshow(D))
 
-
+# A simple estimate
 B = [D[range(D.shape[0]-l),range(l,D.shape[0])].sum() for l in range(D.shape[0])]
 clf()
 plot(t,B)
 #xticks(map(round,np.arange(0, length+1, fsd/5.)),np.arange(0, length/fsd, 0.2))
 show()
 
+
+# The autocorrelation of the similarity matrix
 B2 = np.array([fftconvolve(D[i,:], D[i,::-1], mode = 'full') for i in range(D.shape[0])])
+# autocorrelation is symmetrical around lag 0, we take only lag > 0
 B2 = B2[:,B2.shape[0]:]
 plot(B2.sum(axis=0))
+
 figure()
-plot(abs(hilbert(B2.sum(axis=0))))
+plot(abs(hilbert(B2.sum(axis=0)))) # an attempt at removing the envelope
 show()
 
-show(semilogy(*periodogram(B2[0,:],344)))
-B3 = np.array([butter_bandpass_filter(B2[i,:],1,100,344,8) for i in range(D.shape[0])])
+
+show(semilogy(*periodogram(B2[0,:],344))) # freq spectrum of autocorrelation
+
+B3 = np.array([butter_bandpass_filter(B2[i,:],1,100,344,8) for i in range(D.shape[0])]) # try to bandpass filter
 #show(plot(t[:-1],B3[2000,:]))
 #show(plot(B2[0,B2.shape[0]:]))
 #show(plot(B2[0,B2.shape[0]:]))
 #show(matshow(B2))
+
 
 #beatspectrum = B3[:10,:].sum(axis=0)
 freq = int(float(spectrum.shape[1])/nseconds)
@@ -90,6 +97,7 @@ def moving_average(a, n=3) :
     return ret[n - 1:] / n
 
 
+# These are my experiments
 beatcepstrum = fftconvolve(tmp.seasonal,tmp.seasonal[::-1], mode='full')
 beatcepstrum = beatcepstrum[(beatcepstrum.shape[0]/2):]
 show(plot(t[:freq*4], tmp.seasonal[:freq*4]))
